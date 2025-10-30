@@ -272,6 +272,7 @@ public class LSPosedService extends ILSPosedService.Stub {
     private void dispatchOpenManager(Intent intent) {
         //chenm
         Log.d(TAG, "dispatchOpenManager---------" + intent);
+        Log.i(TAG, "dispatchOpenManager---------" + intent);
         //chenm
         LSPManagerService.openManager(intent.getData());
     }
@@ -422,7 +423,9 @@ public class LSPosedService extends ILSPosedService.Stub {
         var intentFilter = new IntentFilter(LSPNotificationManager.openManagerAction);
         var moduleFilter = new IntentFilter(intentFilter);
         moduleFilter.addDataScheme("module");
-
+        //chenm
+        Log.i(TAG, "registered open manager receiver");
+        //chenm
         registerReceiver(List.of(intentFilter, moduleFilter), 0, this::dispatchOpenManager);
         Log.d(TAG, "registered open manager receiver");
     }
@@ -471,6 +474,11 @@ public class LSPosedService extends ILSPosedService.Stub {
     @Override
     public void dispatchSystemServerContext(IBinder appThread, IBinder activityToken, String api) {
         Log.d(TAG, "received system context");
+        //chenm
+        Log.i(TAG, "received system context");
+        Log.e(TAG, "dispatchSystemServerContext() ENTER  tid=" + Thread.currentThread().getName());
+        Log.e(TAG, "appThread=" + appThread + " activityToken=" + activityToken + " api=" + api);
+        //chenm
         this.appThread = appThread;
         ConfigManager.getInstance().setApi(api);
         ActivityManagerService.onSystemServerContext(IApplicationThread.Stub.asInterface(appThread), activityToken);

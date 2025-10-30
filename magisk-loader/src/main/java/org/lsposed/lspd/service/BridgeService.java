@@ -84,9 +84,16 @@ public class BridgeService {
             Log.e(TAG, "service link to death: ", e);
         }
         try {
+            //chenm
+            Log.i(TAG, "binder alive=" + serviceBinder.isBinderAlive());
+            Log.i(TAG, "binder descriptor=" + serviceBinder.getInterfaceDescriptor());
+            Log.i(TAG, "service=" + service);
+            Log.i(TAG, "service class=" + service.getClass().getName());
+            //chenm
             IApplicationThread at = ActivityThread.currentActivityThread().getApplicationThread();
             Context ctx = ActivityThread.currentActivityThread().getSystemContext();
             service.dispatchSystemServerContext(at.asBinder(), Context_getActivityToken(ctx), BuildConfig.FLAVOR);
+            Log.i(TAG, "dispatchSystemServerContext() call returned successfully");
         } catch (Throwable e) {
             Log.e(TAG, "dispatch context: ", e);
         }
