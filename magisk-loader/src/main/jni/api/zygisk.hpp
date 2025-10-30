@@ -388,5 +388,31 @@ void zygisk_module_entry(zygisk::internal::api_table *, JNIEnv *);
 
 [[gnu::visibility("default"), maybe_unused]]
 void zygisk_companion_entry(int);
+//chenm
+[[gnu::visibility("default")]]
+void lspd_init(JNIEnv* env);
+
+
+[[gnu::visibility("default")]]
+void lspd_on_pre_app_specialize(JNIEnv* env,
+                                jint uid,
+                                jintArray gids,
+                                jstring nice_name,
+                                jboolean is_child_zygote,
+                                jstring app_data_dir);
+
+
+[[gnu::visibility("default")]]
+void lspd_on_post_app_specialize(JNIEnv* env,
+                                 jstring nice_name,
+                                 jstring app_data_dir);
+
+
+[[gnu::visibility("default")]]
+void lspd_on_pre_system_server(JNIEnv* env);
+
+[[gnu::visibility("default")]]
+void lspd_on_post_system_server(JNIEnv* env);
+//chenm
 
 } // extern "C"

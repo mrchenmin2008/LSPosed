@@ -270,6 +270,9 @@ public class LSPosedService extends ILSPosedService.Stub {
     }
 
     private void dispatchOpenManager(Intent intent) {
+        //chenm
+        Log.d(TAG, "dispatchOpenManager---------" + intent);
+        //chenm
         LSPManagerService.openManager(intent.getData());
     }
 

@@ -21,6 +21,7 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/socket.h>
+#include <android/log.h>
 
 #include "config_impl.h"
 #include "magisk_loader.h"
@@ -73,3 +74,63 @@ class ZygiskModule : public zygisk::ModuleBase {
 }  // namespace lspd
 
 REGISTER_ZYGISK_MODULE(lspd::ZygiskModule);
+
+//chenm
+#define LSP_LOG_TAG "LSPosed"
+#define LSP_LOGI(...) __android_log_print(ANDROID_LOG_INFO, LSP_LOG_TAG, __VA_ARGS__)
+#define LSP_LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LSP_LOG_TAG, __VA_ARGS__)
+extern "C" {
+
+
+[[gnu::visibility("default")]]
+void lspd_init(JNIEnv* env) {
+    (void) env;
+    if (!env) {
+        LSP_LOGE("lspd_init: env == nullptr");
+        return;
+    }
+    LSP_LOGI("zygisk_main:lspd_init: calling MagiskLoader::Init and ConfigImpl::Init");
+    MagiskLoader::Init();
+    ConfigImpl::Init();
+
+}
+
+
+[[gnu::visibility("default")]]
+void lspd_on_pre_app_specialize(JNIEnv* env,
+                                jint uid,
+                                jintArray gids,
+                                jstring nice_name,
+                                jboolean is_child_zygote,
+                                jstring app_data_dir) {
+
+    LSP_LOGI("zygisk_main:lspd_on_pre_app_specialize");
+    MagiskLoader::GetInstance()->OnNativeForkAndSpecializePre(
+            env, uid, gids, nice_name, (is_child_zygote == JNI_TRUE), app_data_dir);
+}
+
+
+[[gnu::visibility("default")]]
+void lspd_on_post_app_specialize(JNIEnv* env,
+                                 jstring nice_name,
+                                 jstring app_data_dir) {
+    LSP_LOGI("zygisk_main:lspd_on_post_app_specialize");
+    MagiskLoader::GetInstance()->OnNativeForkAndSpecializePost(env, nice_name, app_data_dir);
+}
+
+
+[[gnu::visibility("default")]]
+void lspd_on_pre_system_server(JNIEnv* env) {
+    LSP_LOGI("zygisk_main:lspd_on_pre_system_server");
+    MagiskLoader::GetInstance()->OnNativeForkSystemServerPre(env);
+}
+
+
+[[gnu::visibility("default")]]
+void lspd_on_post_system_server(JNIEnv* env) {
+    LSP_LOGI("zygisk_main:lspd_on_post_system_server");
+    MagiskLoader::GetInstance()->OnNativeForkSystemServerPost(env);
+}
+
+} // extern "C
+//chenm

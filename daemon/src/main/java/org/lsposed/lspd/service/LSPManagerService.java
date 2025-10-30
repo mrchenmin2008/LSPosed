@@ -156,7 +156,13 @@ public class LSPManagerService extends ILSPManagerService.Stub {
     }
 
     static void openManager(Uri withData) {
+        //chenm
+        Log.d(TAG, "openManager---------" + withData.toString());
+        //chenm
         var intent = getManagerIntent();
+        //chenm
+        Log.d(TAG, "openManager---------" + intent);
+        //chenm
         if (intent == null) return;
         intent = new Intent(intent);
         intent.setData(withData);
@@ -169,6 +175,9 @@ public class LSPManagerService extends ILSPManagerService.Stub {
 
     @SuppressLint("WrongConstant")
     public static void broadcastIntent(Intent inIntent) {
+        //chenm
+        Log.d(TAG, "broadcastIntent---------" + inIntent);
+        //chenm
         var intent = new Intent("org.lsposed.manager.NOTIFICATION");
         intent.putExtra(Intent.EXTRA_INTENT, inIntent);
         intent.addFlags(0x01000000); //Intent.FLAG_RECEIVER_INCLUDE_BACKGROUND

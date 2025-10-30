@@ -150,6 +150,9 @@ public class LSPNotificationManager {
     }
 
     static void notifyStatusNotification() {
+        //chenm
+        Log.e(TAG, "notifyStatusNotification: ");
+        //chenm
         var intent = new Intent(openManagerAction);
         intent.setPackage("android");
         var context = new FakeContext();

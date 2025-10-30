@@ -88,13 +88,17 @@ void MagiskLoader::SetupEntryClass(JNIEnv *env) {
 }
 
 void MagiskLoader::OnNativeForkSystemServerPre(JNIEnv *env) {
-    LOGD("=============bingin===================MagiskLoader::OnNativeForkSystemServerPre");
+    //chenm
+    LOGI("=============bingin===================MagiskLoader::OnNativeForkSystemServerPre");
+    //chenm
     Service::instance()->InitService(env);
     setAllowUnload(skip_);
 }
 
 void MagiskLoader::OnNativeForkSystemServerPost(JNIEnv *env) {
-    LOGD("===============================MagiskLoader::OnNativeForkAndSpecializePost");
+    //chenm
+    LOGI("===============================MagiskLoader::OnNativeForkAndSpecializePost");
+    //chenm
     if (!skip_) {
         auto *instance = Service::instance();
         auto system_server_binder = instance->RequestSystemServerBinder(env);
@@ -131,6 +135,9 @@ void MagiskLoader::OnNativeForkSystemServerPost(JNIEnv *env) {
 void MagiskLoader::OnNativeForkAndSpecializePre(JNIEnv *env, jint uid, jintArray &gids,
                                                 jstring &nice_name, jboolean is_child_zygote,
                                                 jstring app_data_dir) {
+    //chenm
+    LOGI("===============================MagiskLoader::OnNativeForkAndSpecializePre");
+    //chenm
     jboolean is_manager = JNI_FALSE;
     if (uid == kAidInjected) {
         const JUTFString name(env, nice_name);
@@ -172,7 +179,9 @@ void MagiskLoader::OnNativeForkAndSpecializePre(JNIEnv *env, jint uid, jintArray
 }
 
 void MagiskLoader::OnNativeForkAndSpecializePost(JNIEnv *env, jstring nice_name, jstring app_dir) {
-    LOGD("===============================MagiskLoader::OnNativeForkAndSpecializePost");
+    //chenm
+    LOGI("===============================MagiskLoader::OnNativeForkAndSpecializePost");
+    //chenm
     const JUTFString process_name(env, nice_name);
     auto *instance = Service::instance();
     if (is_parasitic_manager) nice_name = JNI_NewStringUTF(env, "org.lsposed.manager").release();
