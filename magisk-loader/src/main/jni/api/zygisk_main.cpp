@@ -80,8 +80,7 @@ REGISTER_ZYGISK_MODULE(lspd::ZygiskModule);
 #define LSP_LOGI(...) __android_log_print(ANDROID_LOG_INFO, LSP_LOG_TAG, __VA_ARGS__)
 #define LSP_LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LSP_LOG_TAG, __VA_ARGS__)
 extern "C" {
-
-
+using namespace lspd;
 [[gnu::visibility("default")]]
 void lspd_init(JNIEnv* env) {
     (void) env;
@@ -97,7 +96,7 @@ void lspd_init(JNIEnv* env) {
 
 
 [[gnu::visibility("default")]]
-void lspd_on_pre_app_specialize(JNIEnv* env,
+void lspd_onNativeForkAndSpecializePre(JNIEnv* env,
                                 jint uid,
                                 jintArray gids,
                                 jstring nice_name,
@@ -111,7 +110,7 @@ void lspd_on_pre_app_specialize(JNIEnv* env,
 
 
 [[gnu::visibility("default")]]
-void lspd_on_post_app_specialize(JNIEnv* env,
+void lspd_onNativeForkAndSpecializePost(JNIEnv* env,
                                  jstring nice_name,
                                  jstring app_data_dir) {
     LSP_LOGI("zygisk_main:lspd_on_post_app_specialize");
@@ -120,14 +119,14 @@ void lspd_on_post_app_specialize(JNIEnv* env,
 
 
 [[gnu::visibility("default")]]
-void lspd_on_pre_system_server(JNIEnv* env) {
+void lspd_onNativeForkSystemServerPre(JNIEnv* env) {
     LSP_LOGI("zygisk_main:lspd_on_pre_system_server");
     MagiskLoader::GetInstance()->OnNativeForkSystemServerPre(env);
 }
 
 
 [[gnu::visibility("default")]]
-void lspd_on_post_system_server(JNIEnv* env) {
+void lspd_onNativeForkSystemServerPost(JNIEnv* env) {
     LSP_LOGI("zygisk_main:lspd_on_post_system_server");
     MagiskLoader::GetInstance()->OnNativeForkSystemServerPost(env);
 }

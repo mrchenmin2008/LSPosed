@@ -394,7 +394,7 @@ void lspd_init(JNIEnv* env);
 
 
 [[gnu::visibility("default")]]
-void lspd_on_pre_app_specialize(JNIEnv* env,
+void lspd_onNativeForkAndSpecializePre(JNIEnv* env,
                                 jint uid,
                                 jintArray gids,
                                 jstring nice_name,
@@ -403,16 +403,16 @@ void lspd_on_pre_app_specialize(JNIEnv* env,
 
 
 [[gnu::visibility("default")]]
-void lspd_on_post_app_specialize(JNIEnv* env,
+void lspd_onNativeForkAndSpecializePost(JNIEnv* env,
                                  jstring nice_name,
                                  jstring app_data_dir);
 
 
 [[gnu::visibility("default")]]
-void lspd_on_pre_system_server(JNIEnv* env);
+void lspd_onNativeForkSystemServerPre(JNIEnv* env);
 
 [[gnu::visibility("default")]]
-void lspd_on_post_system_server(JNIEnv* env);
+void lspd_onNativeForkSystemServerPost(JNIEnv* env);
 //chenm
 
 } // extern "C"
