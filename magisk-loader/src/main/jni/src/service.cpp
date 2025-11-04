@@ -126,7 +126,7 @@ namespace lspd {
 
     void Service::InitService(JNIEnv *env) {
         LOGD("test InitService----------------");
-        LOGD("test InitService---eee---- {}", env);
+        LOGD("test InitService---eee---- {}", reinterpret_cast<void*>(env));
         if (initialized_) [[unlikely]] return;
         LOGD("test InitService----------------1111111111111");
         // ServiceManager
