@@ -38,7 +38,9 @@ static_assert(FS_IOC_SETFLAGS == LP_SELECT(0x40046602, 0x40086602));
 
 namespace lspd {
 extern int *allowUnload;
-jboolean is_parasitic_manager = JNI_FALSE;
+//chenm
+//jboolean is_parasitic_manager = JNI_FALSE;
+//chenm
 
 constexpr int FIRST_ISOLATED_UID = 99000;
 constexpr int LAST_ISOLATED_UID = 99999;
@@ -49,6 +51,14 @@ constexpr int PER_USER_RANGE = 100000;
 
 static constexpr uid_t kAidInjected = INJECTED_AID;
 static constexpr uid_t kAidInet = 3003;
+//chenm
+struct LSPAppContext {
+    bool skip = false;
+    jboolean is_parasitic_manager = JNI_FALSE;
+};
+
+static thread_local LSPAppContext tls_ctx;
+//chenm
 
 void MagiskLoader::LoadDex(JNIEnv *env, PreloadedDex &&dex) {
     auto classloader = JNI_FindClass(env, "java/lang/ClassLoader");
@@ -90,16 +100,22 @@ void MagiskLoader::SetupEntryClass(JNIEnv *env) {
 void MagiskLoader::OnNativeForkSystemServerPre(JNIEnv *env) {
     //chenm
     LOGI("=============bingin===================MagiskLoader::OnNativeForkSystemServerPre");
+    tls_ctx = {};
     //chenm
     Service::instance()->InitService(env);
-    setAllowUnload(skip_);
+    tls_ctx.skip = false;
+    setAllowUnload(tls_ctx.skip);
 }
 
 void MagiskLoader::OnNativeForkSystemServerPost(JNIEnv *env) {
     //chenm
     LOGI("===============================MagiskLoader::OnNativeForkAndSpecializePost");
+    // read and clear thread-local context
+    bool skip = tls_ctx.skip;
+    tls_ctx = {}; // clear after reading
+    LOGI("OnNativeForkSystemServerPost skip: {}", tls_ctx.skip);
     //chenm
-    if (!skip_) {
+    if (!skip) {
         auto *instance = Service::instance();
         auto system_server_binder = instance->RequestSystemServerBinder(env);
         if (!system_server_binder) {
@@ -124,11 +140,19 @@ void MagiskLoader::OnNativeForkSystemServerPost(JNIEnv *env) {
         InitArtHooker(env, initInfo);
         InitHooks(env);
         SetupEntryClass(env);
+        //chenm
+//        FindAndCall(env, "forkCommon",
+//                    "(ZLjava/lang/String;Ljava/lang/String;Landroid/os/IBinder;)V", JNI_TRUE,
+//                    JNI_NewStringUTF(env, "system"), nullptr, application_binder,
+//                    is_parasitic_manager);
         FindAndCall(env, "forkCommon",
                     "(ZLjava/lang/String;Ljava/lang/String;Landroid/os/IBinder;)V", JNI_TRUE,
                     JNI_NewStringUTF(env, "system"), nullptr, application_binder,
-                    is_parasitic_manager);
+                /* is_parasitic_manager */ false);
+        //chenm
         GetArt(true);
+    }else {
+        LOGI("System server skipped ----");
     }
 }
 
@@ -137,6 +161,7 @@ void MagiskLoader::OnNativeForkAndSpecializePre(JNIEnv *env, jint uid, jintArray
                                                 jstring app_data_dir) {
     //chenm
     LOGI("===============================MagiskLoader::OnNativeForkAndSpecializePre");
+    tls_ctx = {};
     //chenm
     jboolean is_manager = JNI_FALSE;
     if (uid == kAidInjected) {
@@ -154,39 +179,54 @@ void MagiskLoader::OnNativeForkAndSpecializePre(JNIEnv *env, jint uid, jintArray
             is_manager = JNI_TRUE;
         }
     }
-    is_parasitic_manager = is_manager;
+    LOGI("===============================MagiskLoader::OnNativeForkAndSpecializePre11111");
+    //chenm
+    //is_parasitic_manager = is_manager;
+    tls_ctx.is_parasitic_manager = is_manager;
+    //chenm
     Service::instance()->InitService(env);
+    LOGI("===============================MagiskLoader::OnNativeForkAndSpecializePre222222");
     const auto app_id = uid % PER_USER_RANGE;
     JUTFString process_name(env, nice_name);
-    skip_ = false;
-    if (!skip_ && !app_data_dir) {
+    LOGI("===============================MagiskLoader::OnNativeForkAndSpecializePre333333");
+    //skip_ = false;
+    bool skip = false;
+    if (!skip && !app_data_dir) {
         LOGD("skip injecting into {} because it has no data dir", process_name.get());
-        skip_ = true;
+        skip = true;
     }
-    if (!skip_ && is_child_zygote) {
-        skip_ = true;
+    if (!skip && is_child_zygote) {
+        skip = true;
         LOGD("skip injecting into {} because it's a child zygote", process_name.get());
     }
-
-    if (!skip_ &&
+    LOGI("===============================MagiskLoader::OnNativeForkAndSpecializePre44444");
+    if (!skip &&
         ((app_id >= FIRST_ISOLATED_UID && app_id <= LAST_ISOLATED_UID) ||
          (app_id >= FIRST_APP_ZYGOTE_ISOLATED_UID && app_id <= LAST_APP_ZYGOTE_ISOLATED_UID) ||
          app_id == SHARED_RELRO_UID)) {
-        skip_ = true;
+        skip = true;
         LOGI("skip injecting into {} because it's isolated", process_name.get());
     }
-    setAllowUnload(skip_);
+    tls_ctx.skip = skip;
+    LOGI("OnNativeForkAndSpecializePre skip: {}", tls_ctx.skip);
+    setAllowUnload(tls_ctx.skip);
+    LOGI("===============================MagiskLoader::OnNativeForkAndSpecializePre55555");
 }
 
 void MagiskLoader::OnNativeForkAndSpecializePost(JNIEnv *env, jstring nice_name, jstring app_dir) {
     //chenm
     LOGI("===============================MagiskLoader::OnNativeForkAndSpecializePost");
+    // 从 thread_local 获取 pre 阶段状态
+    const bool skip = tls_ctx.skip;
+    const jboolean is_parasitic_manager = tls_ctx.is_parasitic_manager;
+    tls_ctx = {}; // 清空，防止污染后续 fork
+    LOGI("OnNativeForkAndSpecializePost skip: {}", skip);
     //chenm
     const JUTFString process_name(env, nice_name);
     auto *instance = Service::instance();
     if (is_parasitic_manager) nice_name = JNI_NewStringUTF(env, "org.lsposed.manager").release();
     auto binder =
-        skip_ ? ScopedLocalRef<jobject>{env, nullptr} : instance->RequestBinder(env, nice_name);
+            skip ? ScopedLocalRef<jobject>{env, nullptr} : instance->RequestBinder(env, nice_name);
     if (binder) {
         auto [dex_fd, size] = instance->RequestLSPDex(env, binder);
         auto obfs_map = instance->RequestObfuscationMap(env, binder);
