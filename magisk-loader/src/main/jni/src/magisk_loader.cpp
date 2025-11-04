@@ -183,6 +183,7 @@ void MagiskLoader::OnNativeForkAndSpecializePre(JNIEnv *env, jint uid, jintArray
     //chenm
     //is_parasitic_manager = is_manager;
     tls_ctx.is_parasitic_manager = is_manager;
+    LOGI("===============================MagiskLoader::OnNativeForkAndSpecializePre11111--2");
     //chenm
     Service::instance()->InitService(env);
     LOGI("===============================MagiskLoader::OnNativeForkAndSpecializePre222222");

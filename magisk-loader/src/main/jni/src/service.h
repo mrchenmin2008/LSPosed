@@ -68,6 +68,9 @@ namespace lspd {
 
     public:
         inline static Service* instance() {
+            if (!instance_) {
+                instance_ = std::make_unique<Service>();
+            }
             return instance_.get();
         }
 
