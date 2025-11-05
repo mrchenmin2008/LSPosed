@@ -125,36 +125,34 @@ namespace lspd {
     }
 
     void Service::InitService(JNIEnv *env) {
-        LOGD("test InitService----------------");
-        LOGD("test InitService---eee---- {}", reinterpret_cast<void*>(env));
+        LOGD("Service InitService- {}", reinterpret_cast<void*>(env));
         if (initialized_) [[unlikely]] return;
-        LOGD("test InitService----------------1111111111111");
         // ServiceManager
         if (auto service_manager_class = JNI_FindClass(env, "android/os/ServiceManager")) {
             service_manager_class_ = JNI_NewGlobalRef(env, service_manager_class);
         } else return;
-        LOGD("test InitService----------------2222222222222");
+
         get_service_method_ = JNI_GetStaticMethodID(env, service_manager_class_, "getService",
                                                     "(Ljava/lang/String;)Landroid/os/IBinder;");
         if (!get_service_method_) return;
-        LOGD("test InitService----------------33333333333333333");
+
         // IBinder
         if (auto ibinder_class = JNI_FindClass(env, "android/os/IBinder")) {
             transact_method_ = JNI_GetMethodID(env, ibinder_class, "transact",
                                                "(ILandroid/os/Parcel;Landroid/os/Parcel;I)Z");
         } else return;
-        LOGD("test InitService----------------4444444444444444");
+
         if (auto binder_class = JNI_FindClass(env, "android/os/Binder")) {
             binder_class_ = JNI_NewGlobalRef(env, binder_class);
         } else return;
-        LOGD("test InitService----------------55555555555555");
+
         binder_ctor_ = JNI_GetMethodID(env, binder_class_, "<init>", "()V");
 
         // Parcel
         if (auto parcel_class = JNI_FindClass(env, "android/os/Parcel")) {
             parcel_class_ = JNI_NewGlobalRef(env, parcel_class);
         } else return;
-        LOGD("test InitService----------------66666666666666666");
+
         data_size_method_ = JNI_GetMethodID(env, parcel_class_, "dataSize","()I");
         obtain_method_ = JNI_GetStaticMethodID(env, parcel_class_, "obtain",
                                                "()Landroid/os/Parcel;");
@@ -177,21 +175,21 @@ namespace lspd {
                                                        "()Landroid/os/ParcelFileDescriptor;");
 //        createStringArray_ = env->GetMethodID(parcel_class_, "createStringArray",
 //                                              "()[Ljava/lang/String;");
-        LOGD("test InitService----------------77777777777777777");
+
         if (auto parcel_file_descriptor_class = JNI_FindClass(env, "android/os/ParcelFileDescriptor")) {
             parcel_file_descriptor_class_ = JNI_NewGlobalRef(env, parcel_file_descriptor_class);
         } else {
             LOGE("ParcelFileDescriptor not found");
             return;
         }
-        LOGD("test InitService----------------88888888888888888");
+
         detach_fd_method_ = JNI_GetMethodID(env, parcel_file_descriptor_class_, "detachFd", "()I");
 
         if (auto dead_object_exception_class = JNI_FindClass(env,
                                                              "android/os/DeadObjectException")) {
             deadObjectExceptionClass_ = JNI_NewGlobalRef(env, dead_object_exception_class);
         }
-        LOGD("test InitService----------------999999999999----initialized_ = true");
+        LOGD("Service InitService----initialized_ = true");
         initialized_ = true;
     }
 

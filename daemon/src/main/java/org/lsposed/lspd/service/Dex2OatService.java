@@ -48,10 +48,16 @@ import java.util.ArrayList;
 @RequiresApi(Build.VERSION_CODES.Q)
 public class Dex2OatService implements Runnable {
     private static final String TAG = "LSPosedDex2Oat";
-    private static final String WRAPPER32 = "bin/dex2oat32";
-    private static final String WRAPPER64 = "bin/dex2oat64";
-    private static final String HOOKER32 = "bin/liboat_hook32.so";
-    private static final String HOOKER64 = "bin/liboat_hook64.so";
+    //chenm
+//    private static final String WRAPPER32 = "bin/dex2oat32";
+//    private static final String WRAPPER64 = "bin/dex2oat64";
+//    private static final String HOOKER32 = "bin/liboat_hook32.so";
+//    private static final String HOOKER64 = "bin/liboat_hook64.so";
+    private static final String WRAPPER32 = "bin/armeabi-v7a/dex2oat";
+    private static final String WRAPPER64 = "bin/arm64-v8a/dex2oat";
+    private static final String HOOKER32 = "bin/armeabi-v7a/liboat_lp.so";
+    private static final String HOOKER64 = "bin/arm64-v8a/liboat_lp.so";
+    //chenm
 
     private final String[] dex2oatArray = new String[6];
     private final FileDescriptor[] fdArray = new FileDescriptor[6];
@@ -80,8 +86,8 @@ public class Dex2OatService implements Runnable {
         //chenm
         //openDex2oat(4, "/data/adb/modules/zygisk_lsposed/bin/liboat_hook32.so");
         //openDex2oat(5, "/data/adb/modules/zygisk_lsposed/bin/liboat_hook64.so");
-        openDex2oat(4, "/vendor/lpdaemon/bin/liboat_hook32.so");
-        openDex2oat(5, "/vendor/lpdaemon/bin/liboat_hook64.so");
+        openDex2oat(4, "/vendor/lpspace/bin/armeabi-v7a/liboat_lp.so");
+        openDex2oat(5, "/vendor/lpspace/bin/arm64-v8a/liboat_lp.so");
         //chenm
 
         var enforce = Paths.get("/sys/fs/selinux/enforce");

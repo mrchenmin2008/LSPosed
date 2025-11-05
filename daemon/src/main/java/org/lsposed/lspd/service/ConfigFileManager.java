@@ -437,11 +437,18 @@ public class ConfigFileManager {
 
     synchronized static SharedMemory getPreloadDex(boolean obfuscate) {
         if (preloadDex == null) {
-            try (var is = new FileInputStream("framework/lspd.dex")) {
+            //chenm
+//            try (var is = new FileInputStream("framework/lspd.dex")) {
+//                preloadDex = readDex(is, obfuscate);
+//            } catch (Throwable e) {
+//                Log.e(TAG, "preload dex", e);
+//            }
+            try (var is = new FileInputStream("framework/lpsp.dex")) {
                 preloadDex = readDex(is, obfuscate);
             } catch (Throwable e) {
                 Log.e(TAG, "preload dex", e);
             }
+            //chenm
         }
         return preloadDex;
     }
