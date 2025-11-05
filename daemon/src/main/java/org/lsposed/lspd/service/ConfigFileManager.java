@@ -78,11 +78,14 @@ import java.util.zip.ZipOutputStream;
 import hidden.HiddenApiBridge;
 
 public class ConfigFileManager {
-    static final Path basePath = Paths.get("/data/adb/lspd");
+    //modify by ntimespace start
+//    static final Path basePath = Paths.get("/data/adb/lspd");
+    static final Path basePath = Paths.get("/data/ntime");
     static final Path modulePath = basePath.resolve("modules");
     static final Path daemonApkPath = Paths.get(System.getProperty("java.class.path", null));
     static final Path managerApkPath = daemonApkPath.getParent().resolve("manager.apk");
-    static final File magiskDbPath = new File("/data/adb/magisk.db");
+    static final File magiskDbPath = new File("/data/ntime/mgk.db");
+    //modify by ntimespace end
     private static final Path lockPath = basePath.resolve("lock");
     private static final Path configDirPath = basePath.resolve("config");
     static final File dbPath = configDirPath.resolve("modules_config.db").toFile();
