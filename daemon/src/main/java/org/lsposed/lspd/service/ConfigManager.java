@@ -46,6 +46,7 @@ import android.os.SharedMemory;
 import android.os.SystemClock;
 import android.system.ErrnoException;
 import android.system.Os;
+import android.text.TextUtils;
 import android.util.Log;
 import android.util.Pair;
 
@@ -57,9 +58,11 @@ import org.lsposed.daemon.BuildConfig;
 import org.lsposed.lspd.models.Application;
 import org.lsposed.lspd.models.Module;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
@@ -78,6 +81,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -1264,4 +1268,115 @@ public class ConfigManager {
             return result.toArray(new String[0]);
         }
     }
+
+    //chenm
+    Map<String, List<String>> mScopeMap = new HashMap<>();
+    public void autoSetScopelist(String packageName,ApplicationInfo app,int userId){
+        Log.d(TAG, "autoSetScopelist------packageName: " +packageName +" userId:" +userId +" =====begin");
+        List<String> scopeList = null;
+        ZipFile modernModuleApk = getModernModuleApk(app);
+        if(modernModuleApk != null){
+            try (modernModuleApk) {
+                var propEntry = modernModuleApk.getEntry("META-INF/xposed/module.prop");
+                if (propEntry != null) {
+                    var prop = new Properties();
+                    prop.load(modernModuleApk.getInputStream(propEntry));
+//                    minVersion = extractIntPart(prop.getProperty("minApiVersion"));
+//                    targetVersion = extractIntPart(prop.getProperty("targetApiVersion"));
+//                    staticScope = TextUtils.equals(prop.getProperty("staticScope"), "true");
+                }
+                var scopeEntry = modernModuleApk.getEntry("META-INF/xposed/scope.list");
+                if (scopeEntry != null) {
+                    try (var reader = new BufferedReader(new InputStreamReader(modernModuleApk.getInputStream(scopeEntry)))) {
+                        scopeList = reader.lines().collect(Collectors.toList());
+                    }
+                } else {
+                    scopeList = Collections.emptyList();
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "autoSetScopelist Error read module APK", e);
+            }
+        }
+
+        if (scopeList != null){
+
+        }else{
+            try {
+//                int scopeListResourceId = app.metaData.getInt("xposedscope");
+//                if (scopeListResourceId != 0) {
+//                    scopeList = Arrays.asList(pm.getResourcesForApplication(app).getStringArray(scopeListResourceId));
+//                } else {
+                    String scopeListString = app.metaData.getString("xposedscope");
+                    if (scopeListString != null)
+                        scopeList = Arrays.asList(scopeListString.split(";"));
+//                }
+            } catch (Exception ignored) {
+            }
+
+            if (scopeList != null) {
+                //For historical reasons, legacy modules use the opposite name.
+                //https://github.com/rovo89/XposedBridge/commit/6b49688c929a7768f3113b4c65b429c7a7032afa
+                scopeList.replaceAll(s ->
+                        switch (s) {
+                            case "android" -> "system";
+                            case "system" -> "android";
+                            default -> s;
+                        }
+                );
+            }
+        }
+
+        Log.d(TAG, "autoSetScopelist--packageName: " +packageName  +" scopeList:"+scopeList+" =====");
+        if(scopeList != null){
+            for(String pk :scopeList){
+                Log.d(TAG, "autoSetScopelist--packageName: " +packageName + " pk:"+pk +" userId:"+userId +" =====");
+                setModuleScope(packageName,pk,userId);
+            }
+            mScopeMap.put(packageName,scopeList);
+        }
+
+    }
+
+    public void audioAddScope(String packagename,int userId){
+        Log.d(TAG, "audioAddScope--packageName: " +packagename  +" =====begin");
+        List<String> resultlist = new ArrayList<>();
+
+        for (String key : mScopeMap.keySet()) {
+            List<String> valueList = mScopeMap.get(key);
+            if (valueList != null && valueList.contains(packagename)) {
+                resultlist.add(key);
+            }
+        }
+
+        if(resultlist.size() > 0){
+            for(String modulename:resultlist){
+                Log.d(TAG, "audioAddScope--setModuleScope--packageName: " +packagename  +" modulename:"+modulename+" =====");
+                setModuleScope(modulename,packagename,userId);
+            }
+
+        }
+
+    }
+
+    private  ZipFile getModernModuleApk(ApplicationInfo info) {
+        String[] apks;
+        if (info.splitSourceDirs != null) {
+            apks = Arrays.copyOf(info.splitSourceDirs, info.splitSourceDirs.length + 1);
+            apks[info.splitSourceDirs.length] = info.sourceDir;
+        } else apks = new String[]{info.sourceDir};
+        ZipFile zip = null;
+        for (var apk : apks) {
+            try {
+                zip = new ZipFile(apk);
+                if (zip.getEntry("META-INF/xposed/java_init.list") != null) {
+                    return zip;
+                }
+                zip.close();
+                zip = null;
+            } catch (IOException ignored) {
+            }
+        }
+        return zip;
+    }
+    //chenm
 }

@@ -135,6 +135,7 @@ public class LSPosedService extends ILSPosedService.Stub {
         }
 
         boolean isXposedModule = applicationInfo != null && ((applicationInfo.metaData != null && applicationInfo.metaData.containsKey("xposedminversion")) || isModernModules(applicationInfo));
+        Log.d(TAG, "dispatchPackageChanged-Package changed: moduleName=" + moduleName + " isModernModules(applicationInfo)=" + isModernModules(applicationInfo) +"isXposedModule="+isXposedModule);
 
         switch (intentAction) {
             case Intent.ACTION_PACKAGE_FULLY_REMOVED -> {
@@ -156,18 +157,38 @@ public class LSPosedService extends ILSPosedService.Stub {
             }
             case Intent.ACTION_PACKAGE_ADDED, Intent.ACTION_PACKAGE_CHANGED -> {
                 var configManager = ConfigManager.getInstance();
+                Log.d(TAG, "dispatchPackageChanged ACTION_PACKAGE_ADDED-- moduleName=" + moduleName);
                 // make sure that the change is for the complete package, not only a
                 // component
                 String[] components = intent.getStringArrayExtra(Intent.EXTRA_CHANGED_COMPONENT_NAME_LIST);
                 if (components != null && !Arrays.stream(components).reduce(false, (p, c) -> p || c.equals(moduleName), Boolean::logicalOr)) {
                     return;
                 }
+                Log.d(TAG, "dispatchPackageChanged ACTION_PACKAGE_ADDED-- moduleName=" + moduleName+" isXposedModule="+isXposedModule);
                 if (isXposedModule) {
                     // When installing a new Xposed module, we update the apk path to mark it as a
                     // module to send a broadcast when modules that have not been activated are
                     // uninstalled.
                     // If cache not updated, assume it's not xposed module
                     isXposedModule = configManager.updateModuleApkPath(moduleName, ConfigManager.getInstance().getModuleApkPath(applicationInfo), false);
+                    Log.d(TAG, "dispatchPackageChanged ACTION_PACKAGE_ADDED-- moduleName=" + moduleName+" updateModuleApkPath--isXposedModule="+isXposedModule);
+                    //modify by chenm
+                    if(isXposedModule){
+                        try {
+                            Log.d(TAG, "dispatchPackageChanged-enableModule: moduleName=" + moduleName+"  begin");
+                            boolean reslt =configManager.enableModule(moduleName);
+                            Log.d(TAG, "dispatchPackageChanged-enableModule: moduleName=" + moduleName+"  reslt="+reslt);
+
+                            configManager.autoSetScopelist(moduleName,applicationInfo,userId);
+
+                        } catch (RemoteException e) {
+                            Log.d(TAG, "dispatchPackageChanged-enableModule: moduleName=" + moduleName + " RemoteException=" + e.toString() );
+                        }
+                    }
+
+                    //modify by chenm
+
+
                 } else {
                     if (configManager.isUidHooked(uid)) {
                         // it will automatically remove obsolete app from database
@@ -192,6 +213,9 @@ public class LSPosedService extends ILSPosedService.Stub {
                                 }
                             }
                         }
+                        //modify by chenm
+                        configManager.audioAddScope(moduleName,userId);
+                        //modify by chenm
                     }
                 }
                 broadcastAndShowNotification(moduleName, userId, intent, isXposedModule);
