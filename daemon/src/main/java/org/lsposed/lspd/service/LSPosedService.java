@@ -56,6 +56,12 @@ import java.util.zip.ZipFile;
 
 import hidden.HiddenApiBridge;
 import io.github.libxposed.service.IXposedScopeCallback;
+//chenm
+import org.json.JSONArray;
+import org.json.JSONObject;
+import java.util.ArrayList;
+
+//chenm
 
 public class LSPosedService extends ILSPosedService.Stub {
     private static final int AID_NOBODY = 9999;
@@ -173,18 +179,18 @@ public class LSPosedService extends ILSPosedService.Stub {
                     isXposedModule = configManager.updateModuleApkPath(moduleName, ConfigManager.getInstance().getModuleApkPath(applicationInfo), false);
                     Log.d(TAG, "dispatchPackageChanged ACTION_PACKAGE_ADDED-- moduleName=" + moduleName+" updateModuleApkPath--isXposedModule="+isXposedModule);
                     //modify by chenm
-                    if(isXposedModule){
-                        try {
-                            Log.d(TAG, "dispatchPackageChanged-enableModule: moduleName=" + moduleName+"  begin");
-                            boolean reslt =configManager.enableModule(moduleName);
-                            Log.d(TAG, "dispatchPackageChanged-enableModule: moduleName=" + moduleName+"  reslt="+reslt);
-
-                            configManager.autoSetScopelist(moduleName,applicationInfo,userId);
-
-                        } catch (RemoteException e) {
-                            Log.d(TAG, "dispatchPackageChanged-enableModule: moduleName=" + moduleName + " RemoteException=" + e.toString() );
-                        }
-                    }
+//                    if(isXposedModule){
+//                        try {
+//                            Log.d(TAG, "dispatchPackageChanged-enableModule: moduleName=" + moduleName+"  begin");
+//                            boolean reslt =configManager.enableModule(moduleName);
+//                            Log.d(TAG, "dispatchPackageChanged-enableModule: moduleName=" + moduleName+"  reslt="+reslt);
+//
+//                            configManager.autoSetScopelist(moduleName,applicationInfo,userId);
+//
+//                        } catch (RemoteException e) {
+//                            Log.d(TAG, "dispatchPackageChanged-enableModule: moduleName=" + moduleName + " RemoteException=" + e.toString() );
+//                        }
+//                    }
 
                     //modify by chenm
 
@@ -214,7 +220,7 @@ public class LSPosedService extends ILSPosedService.Stub {
                             }
                         }
                         //modify by chenm
-                        configManager.audioAddScope(moduleName,userId);
+//                        configManager.audioAddScope(moduleName,userId);
                         //modify by chenm
                     }
                 }
@@ -242,6 +248,67 @@ public class LSPosedService extends ILSPosedService.Stub {
             ConfigManager.getInstance().updateManager(removed);
         }
     }
+
+    //chenm
+    private void dispatchModuleConfig(Intent intent) {
+        Log.d(TAG, "dispatchModuleConfig---enter intent:"+intent);
+        if (intent == null) return;
+        if (!intent.hasExtra("module_list")){
+            Log.e(TAG, "dispatchModuleConfig-ModuleConfig  module_list not exist");
+            return;
+        }
+        var configManager = ConfigManager.getInstance();
+
+        String jsonArrayStr = intent.getStringExtra("module_list");
+        Log.d(TAG, "dispatchModuleConfig-ModuleConfig: " + jsonArrayStr);
+        try {
+            JSONArray jsonArray = new JSONArray(jsonArrayStr);
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject moduleObj = jsonArray.getJSONObject(i);
+                String modulename;
+                if (!moduleObj.has("module_name")) {
+                    Log.e(TAG, "dispatchModuleConfig-ModuleConfig  module_name not exist  return");
+                   return;
+                }
+
+                modulename = moduleObj.getString("module_name");
+
+                if(moduleObj.has("enabled")){
+                    if(moduleObj.getBoolean("enabled")){
+                        configManager.enableModule(modulename);
+                    }else{
+                        configManager.disableModule(modulename);
+                    }
+
+                }
+
+                if(moduleObj.has("autoinclude")){
+                    configManager.setAutoInclude(modulename,moduleObj.getBoolean("autoinclude"));
+                }
+
+                if(moduleObj.has("scope_list")){
+                    JSONArray scopeArray = moduleObj.getJSONArray("scope_list");
+                    List<String> scopeList = new ArrayList<>();
+                    for (int j = 0; j < scopeArray.length(); j++) {
+                        scopeList.add(scopeArray.getString(j));
+                    }
+                    List<Application> list = new ArrayList<>();
+                    for(String pkg:scopeList){
+                        Application app = new Application();
+                        app.userId = 0;
+                        app.packageName = pkg;
+                        list.add(app);
+                    }
+                    configManager.setModuleScope(modulename,list);
+
+                }
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "dispatchModuleConfig exception:", e);
+        }
+    }
+    //chenm
 
     private void broadcastAndShowNotification(String packageName, int userId, Intent intent, boolean isXposedModule) {
         Log.d(TAG, "package " + packageName + " changed, dispatching to manager");
@@ -403,6 +470,15 @@ public class LSPosedService extends ILSPosedService.Stub {
         Log.d(TAG, "registered package receiver");
     }
 
+    //chenm
+    private void registerModuleConfigReceiver(){
+        IntentFilter filter = new IntentFilter(ConfigFileManager.ACTION_MODULE_CONFIG);
+        registerReceiver(List.of(filter), -1, this::dispatchModuleConfig);
+        Log.d(TAG, "registerModuleConfigReceiver ---");
+
+    }
+    //chenm
+
     private void registerConfigurationReceiver() {
         var intentFilter = new IntentFilter(Intent.ACTION_CONFIGURATION_CHANGED);
 
@@ -514,6 +590,9 @@ public class LSPosedService extends ILSPosedService.Stub {
         registerOpenManagerReceiver();
         registerModuleScopeReceiver();
         registerUidObserver();
+        //chenm
+        registerModuleConfigReceiver();
+        //chenm
     }
 
     @Override

@@ -64,8 +64,17 @@ val injectedPackageName by extra("com.android.shell")
 val injectedPackageUid by extra(2000)
 
 val defaultManagerPackageName by extra("org.lsposed.manager")
-val verCode by extra(commitCount)
-val verName by extra(latestTag)
+
+
+//chenm
+val manualVersionCode = 7190
+val manualVersionName = "My20251104-1.10.2"
+//val verCode by extra(commitCount)
+//val verName by extra(latestTag)
+
+val verCode by extra(manualVersionCode)
+val verName by extra(manualVersionName)
+//chenm
 val androidTargetSdkVersion by extra(36)
 val androidMinSdkVersion by extra(27)
 val androidBuildToolsVersion by extra("36.0.0")
