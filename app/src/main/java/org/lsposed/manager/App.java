@@ -107,7 +107,7 @@ public class App extends Application {
         });
     }
 
-    public static final String TAG = "LSPosedManager";
+    public static final String TAG = "lpspaceManager";
     private static final String ACTION_USER_ADDED = "android.intent.action.USER_ADDED";
     private static final String ACTION_USER_REMOVED = "android.intent.action.USER_REMOVED";
     private static final String ACTION_USER_INFO_CHANGED = "android.intent.action.USER_INFO_CHANGED";
@@ -240,6 +240,19 @@ public class App extends Application {
         }, intentFilter, Context.RECEIVER_NOT_EXPORTED);
 
         UpdateUtil.loadRemoteVersion();
+
+        //chenm
+        IntentFilter brodFilter = new IntentFilter();
+        brodFilter.addAction("android.intent.action.MODULE_CONFIG_CHANGED");
+        registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent inIntent) {
+//                var intent = (Intent) inIntent.getParcelableExtra(Intent.EXTRA_INTENT);
+                Log.d(TAG, "ODULE_CONFIG_CHANGED--onReceive: " + inIntent);
+                ModuleUtil.getInstance().reloadInstalledModules();
+            }
+        }, brodFilter, Context.RECEIVER_NOT_EXPORTED);
+        //chenm
     }
 
     @NonNull

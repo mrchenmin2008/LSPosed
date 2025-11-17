@@ -20,6 +20,8 @@
 import com.android.build.api.dsl.ApplicationDefaultConfig
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.gradle.api.AndroidBasePlugin
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 plugins {
     alias(libs.plugins.lsplugin.cmaker)
@@ -67,8 +69,9 @@ val defaultManagerPackageName by extra("org.lsposed.manager")
 
 
 //chenm
+val buildDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
 val manualVersionCode = 7190
-val manualVersionName = "My20251104-1.10.2"
+val manualVersionName = "My$buildDate-1.10.2"
 //val verCode by extra(commitCount)
 //val verName by extra(latestTag)
 

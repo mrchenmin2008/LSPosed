@@ -76,19 +76,19 @@ class ZygiskModule : public zygisk::ModuleBase {
 REGISTER_ZYGISK_MODULE(lspd::ZygiskModule);
 
 //chenm
-#define LSP_LOG_TAG "LSPosed"
+#define LSP_LOG_TAG "lpspace"
 #define LSP_LOGI(...) __android_log_print(ANDROID_LOG_INFO, LSP_LOG_TAG, __VA_ARGS__)
 #define LSP_LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LSP_LOG_TAG, __VA_ARGS__)
 extern "C" {
 using namespace lspd;
 [[gnu::visibility("default")]]
-void lspd_init(JNIEnv* env) {
+void lpspace_init(JNIEnv* env) {
     (void) env;
     if (!env) {
-        LSP_LOGE("lspd_init: env == nullptr");
+        LSP_LOGE("lpspace_init: env == nullptr");
         return;
     }
-    LSP_LOGI("zygisk_main:lspd_init: calling MagiskLoader::Init and ConfigImpl::Init");
+    LSP_LOGI("lpspace_init: calling Init");
     MagiskLoader::Init();
     ConfigImpl::Init();
 
@@ -96,38 +96,38 @@ void lspd_init(JNIEnv* env) {
 
 
 [[gnu::visibility("default")]]
-void lspd_onNativeForkAndSpecializePre(JNIEnv* env,
+void lpspace_SpecializePre(JNIEnv* env,
                                 jint uid,
                                 jintArray gids,
                                 jstring nice_name,
                                 jboolean is_child_zygote,
                                 jstring app_data_dir) {
 
-    LSP_LOGI("zygisk_main:lspd_on_pre_app_specialize");
+    LSP_LOGI("lpspace_SpecializePre--");
     MagiskLoader::GetInstance()->OnNativeForkAndSpecializePre(
             env, uid, gids, nice_name, (is_child_zygote == JNI_TRUE), app_data_dir);
 }
 
 
 [[gnu::visibility("default")]]
-void lspd_onNativeForkAndSpecializePost(JNIEnv* env,
+void lpspace_SpecializePost(JNIEnv* env,
                                  jstring nice_name,
                                  jstring app_data_dir) {
-    LSP_LOGI("zygisk_main:lspd_on_post_app_specialize");
+    LSP_LOGI("lpspace_SpecializePost---");
     MagiskLoader::GetInstance()->OnNativeForkAndSpecializePost(env, nice_name, app_data_dir);
 }
 
 
 [[gnu::visibility("default")]]
-void lspd_onNativeForkSystemServerPre(JNIEnv* env) {
-    LSP_LOGI("zygisk_main:lspd_on_pre_system_server");
+void lpspace_SystemServerPre(JNIEnv* env) {
+    LSP_LOGI("lpspace_SystemServerPre-----");
     MagiskLoader::GetInstance()->OnNativeForkSystemServerPre(env);
 }
 
 
 [[gnu::visibility("default")]]
-void lspd_onNativeForkSystemServerPost(JNIEnv* env) {
-    LSP_LOGI("zygisk_main:lspd_on_post_system_server");
+void lpspace_SystemServerPost(JNIEnv* env) {
+    LSP_LOGI("lpspace_SystemServerPost----");
     MagiskLoader::GetInstance()->OnNativeForkSystemServerPost(env);
 }
 

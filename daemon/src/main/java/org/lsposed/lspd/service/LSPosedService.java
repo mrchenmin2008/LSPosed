@@ -307,6 +307,26 @@ public class LSPosedService extends ILSPosedService.Stub {
         } catch (Exception e) {
             Log.e(TAG, "dispatchModuleConfig exception:", e);
         }
+
+        var intentm = new Intent("android.intent.action.MODULE_CONFIG_CHANGED");
+        intentm.addFlags(0x01000000); //Intent.FLAG_RECEIVER_INCLUDE_BACKGROUND
+        intentm.addFlags(0x00400000); //Intent.FLAG_RECEIVER_FROM_SHELL
+        intentm.setPackage(BuildConfig.MANAGER_INJECTED_PKG_NAME);
+        try {
+            ActivityManagerService.broadcastIntentWithFeature(null, intentm,
+                    null, null, 0, null, null,
+                    null, -1, null, true, false,
+                    0);
+            intentm.setPackage(BuildConfig.DEFAULT_MANAGER_PACKAGE_NAME);
+            ActivityManagerService.broadcastIntentWithFeature(null, intentm,
+                    null, null, 0, null, null,
+                    null, -1, null, true, false,
+                    0);
+            Log.d(TAG, "Broadcast MODULE_CONFIG_CHANGED to manager sucess ");
+        } catch (RemoteException t) {
+            Log.e(TAG, "Broadcast MODULE_CONFIG_CHANGED to manager failed: ", t);
+        }
+
     }
     //chenm
 

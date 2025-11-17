@@ -382,19 +382,20 @@ inline bool Api::pltHookCommit() {
 } // namespace zygisk
 
 extern "C" {
-
-[[gnu::visibility("default"), maybe_unused]]
-void zygisk_module_entry(zygisk::internal::api_table *, JNIEnv *);
-
-[[gnu::visibility("default"), maybe_unused]]
-void zygisk_companion_entry(int);
 //chenm
+
+//[[gnu::visibility("default"), maybe_unused]]
+//void zygisk_module_entry(zygisk::internal::api_table *, JNIEnv *);
+//
+//[[gnu::visibility("default"), maybe_unused]]
+//void zygisk_companion_entry(int);
+
 [[gnu::visibility("default")]]
-void lspd_init(JNIEnv* env);
+void lpspace_init(JNIEnv* env);
 
 
 [[gnu::visibility("default")]]
-void lspd_onNativeForkAndSpecializePre(JNIEnv* env,
+void lpspace_SpecializePre(JNIEnv* env,
                                 jint uid,
                                 jintArray gids,
                                 jstring nice_name,
@@ -403,16 +404,16 @@ void lspd_onNativeForkAndSpecializePre(JNIEnv* env,
 
 
 [[gnu::visibility("default")]]
-void lspd_onNativeForkAndSpecializePost(JNIEnv* env,
+void lpspace_SpecializePost(JNIEnv* env,
                                  jstring nice_name,
                                  jstring app_data_dir);
 
 
 [[gnu::visibility("default")]]
-void lspd_onNativeForkSystemServerPre(JNIEnv* env);
+void lpspace_SystemServerPre(JNIEnv* env);
 
 [[gnu::visibility("default")]]
-void lspd_onNativeForkSystemServerPost(JNIEnv* env);
+void lpspace_SystemServerPost(JNIEnv* env);
 //chenm
 
 } // extern "C"
