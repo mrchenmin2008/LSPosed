@@ -65,3 +65,23 @@ dependencies {
     compileOnly(libs.androidx.annotation)
     compileOnly(projects.hiddenapi.stubs)
 }
+
+tasks.register<Jar>("createXposedJar") {
+    archiveBaseName.set("api-pmxped")
+    archiveVersion.set("1.0.0")
+
+    // 指定要打包的源文件目录
+    from(project.android.sourceSets["main"].java.srcDirs)
+
+    // 只包含指定的包路径
+    include(
+        "de/robv/android/pmxped/**/*.java",
+        "de/robv/android/pmxped/callbacks/**/*.java",
+        "de/robv/android/pmxped/services/**/*.java",
+        "android/app/**/*.java",
+        "android/content/res/**/*.java"
+    )
+
+    // 输出目录
+    destinationDirectory.set(file("$buildDir/libs/"))
+}

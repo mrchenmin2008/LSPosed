@@ -18,7 +18,7 @@
  * Copyright (C) 2021 - 2022 LSPosed Contributors
  */
 
-package de.robv.android.xposed;
+package de.robv.android.pmxped;
 
 import android.app.ActivityThread;
 import android.content.res.Resources;
@@ -42,27 +42,27 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import de.robv.android.xposed.callbacks.XC_InitPackageResources;
-import de.robv.android.xposed.callbacks.XC_LoadPackage;
+import de.robv.android.pmxped.callbacks.XC_InitPackageResources;
+import de.robv.android.pmxped.callbacks.XC_LoadPackage;
 import io.github.libxposed.api.XposedInterface;
 
 /**
  * This class contains most of Xposed's central logic, such as initialization and callbacks used by
  * the native side. It also includes methods to add new hooks.
  */
-public final class XposedBridge {
+public final class PmxpedBridge {
     /**
      * The system class loader which can be used to locate Android framework classes.
      * Application classes cannot be retrieved from it.
      *
      * @see ClassLoader#getSystemClassLoader
      */
-    public static final ClassLoader BOOTCLASSLOADER = XposedBridge.class.getClassLoader();
+    public static final ClassLoader BOOTCLASSLOADER = PmxpedBridge.class.getClassLoader();
 
     /**
      * @hide
      */
-    public static final String TAG = "LSPosed-Bridge";
+    public static final String TAG = "lpspace-Bridge";
 
     /**
      * @deprecated Use {@link #getXposedVersion()} instead.
@@ -76,7 +76,7 @@ public final class XposedBridge {
     public static final CopyOnWriteArraySet<XC_LoadPackage> sLoadedPackageCallbacks = new CopyOnWriteArraySet<>();
     /*package*/ static final CopyOnWriteArraySet<XC_InitPackageResources> sInitPackageResourcesCallbacks = new CopyOnWriteArraySet<>();
 
-    private XposedBridge() {
+    private PmxpedBridge() {
     }
 
     public static volatile ClassLoader dummyClassLoader = null;
@@ -101,31 +101,31 @@ public final class XposedBridge {
                     // ActivityThread for now and the call will throw an NPE. Luckily they check the
                     // nullability of the result configuration. So we hereby set a dummy
                     // ActivityThread to bypass such a situation.
-                    var fake = XposedHelpers.newInstance(ActivityThread.class);
-                    XposedHelpers.setStaticObjectField(ActivityThread.class, "sCurrentActivityThread", fake);
+                    var fake = PmxpedHelpers.newInstance(ActivityThread.class);
+                    PmxpedHelpers.setStaticObjectField(ActivityThread.class, "sCurrentActivityThread", fake);
                     try {
                         TypedArray ta = res.obtainTypedArray(res.getIdentifier(
                                 "preloaded_drawables", "array", "android"));
                         taClass = ta.getClass();
                         ta.recycle();
                     } finally {
-                        XposedHelpers.setStaticObjectField(ActivityThread.class, "sCurrentActivityThread", null);
+                        PmxpedHelpers.setStaticObjectField(ActivityThread.class, "sCurrentActivityThread", null);
                     }
                 }
             } catch (Resources.NotFoundException nfe) {
-                XposedBridge.log(nfe);
+                PmxpedBridge.log(nfe);
             }
             ResourcesHook.makeInheritable(resClass);
             ResourcesHook.makeInheritable(taClass);
-            ClassLoader myCL = XposedBridge.class.getClassLoader();
+            ClassLoader myCL = PmxpedBridge.class.getClassLoader();
             assert myCL != null;
             dummyClassLoader = ResourcesHook.buildDummyClassLoader(myCL.getParent(), resClass.getName(), taClass.getName());
             dummyClassLoader.loadClass("xposed.dummy.XResourcesSuperClass");
             dummyClassLoader.loadClass("xposed.dummy.XTypedArraySuperClass");
-            XposedHelpers.setObjectField(myCL, "parent", dummyClassLoader);
+            PmxpedHelpers.setObjectField(myCL, "parent", dummyClassLoader);
         } catch (Throwable throwable) {
-            XposedBridge.log(throwable);
-            XposedInit.disableResources = true;
+            PmxpedBridge.log(throwable);
+            PmxpedInit.disableResources = true;
         }
     }
 
@@ -185,11 +185,11 @@ public final class XposedBridge {
      * @param hookMethod The method to be hooked.
      * @param callback   The callback to be executed when the hooked method is called.
      * @return An object that can be used to remove the hook.
-     * @see XposedHelpers#findAndHookMethod(String, ClassLoader, String, Object...)
-     * @see XposedHelpers#findAndHookMethod(Class, String, Object...)
+     * @see PmxpedHelpers#findAndHookMethod(String, ClassLoader, String, Object...)
+     * @see PmxpedHelpers#findAndHookMethod(Class, String, Object...)
      * @see #hookAllMethods
-     * @see XposedHelpers#findAndHookConstructor(String, ClassLoader, Object...)
-     * @see XposedHelpers#findAndHookConstructor(Class, Object...)
+     * @see PmxpedHelpers#findAndHookConstructor(String, ClassLoader, Object...)
+     * @see PmxpedHelpers#findAndHookConstructor(Class, Object...)
      * @see #hookAllConstructors
      */
     public static XC_MethodHook.Unhook hookMethod(Member hookMethod, XC_MethodHook callback) {
@@ -197,7 +197,7 @@ public final class XposedBridge {
             throw new IllegalArgumentException("Only methods and constructors can be hooked: " + hookMethod);
         } else if (Modifier.isAbstract(hookMethod.getModifiers())) {
             throw new IllegalArgumentException("Cannot hook abstract methods: " + hookMethod);
-        } else if (hookMethod.getDeclaringClass().getClassLoader() == XposedBridge.class.getClassLoader()) {
+        } else if (hookMethod.getDeclaringClass().getClassLoader() == PmxpedBridge.class.getClassLoader()) {
             throw new IllegalArgumentException("Do not allow hooking inner methods");
         } else if (hookMethod.getDeclaringClass() == Method.class && hookMethod.getName().equals("invoke")) {
             throw new IllegalArgumentException("Cannot hook Method.invoke");
@@ -267,7 +267,7 @@ public final class XposedBridge {
     /**
      * Adds a callback to be executed when an app ("Android package") is loaded.
      *
-     * <p class="note">You probably don't need to call this. Simply implement {@link IXposedHookLoadPackage}
+     * <p class="note">You probably don't need to call this. Simply implement {@link IPmxpedHookLoadPackage}
      * in your module class and Xposed will take care of registering it as a callback.
      *
      * @param callback The callback to be executed.
@@ -282,7 +282,7 @@ public final class XposedBridge {
     /**
      * Adds a callback to be executed when the resources for an app are initialized.
      *
-     * <p class="note">You probably don't need to call this. Simply implement {@link IXposedHookInitPackageResources}
+     * <p class="note">You probably don't need to call this. Simply implement {@link IPmxpedHookInitPackageResources}
      * in your module class and Xposed will take care of registering it as a callback.
      *
      * @param callback The callback to be executed.
@@ -403,7 +403,7 @@ public final class XposedBridge {
                     var cb = (XC_MethodHook) snapshot[beforeIdx];
                     cb.beforeHookedMethod(param);
                 } catch (Throwable t) {
-                    XposedBridge.log(t);
+                    PmxpedBridge.log(t);
 
                     // reset result (ignoring what the unexpectedly exiting callback did)
                     param.setResult(null);
@@ -429,7 +429,7 @@ public final class XposedBridge {
                     var cb = (XC_MethodHook) snapshot[afterIdx];
                     cb.afterHookedMethod(param);
                 } catch (Throwable t) {
-                    XposedBridge.log(t);
+                    PmxpedBridge.log(t);
 
                     // reset to last result (ignoring what the unexpectedly exiting callback did)
                     if (lastThrowable == null) {

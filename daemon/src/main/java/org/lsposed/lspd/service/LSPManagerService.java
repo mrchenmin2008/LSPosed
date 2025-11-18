@@ -127,11 +127,11 @@ public class LSPManagerService extends ILSPManagerService.Stub {
     }
 
     private static Intent getManagerIntent() {
-        Log.i(TAG, "getManagerIntent----11111-----" +managerIntent);
+        Log.d(TAG, "getManagerIntent--begin----" +managerIntent);
         if (managerIntent != null) return managerIntent;
         try {
             var intent = PackageService.getLaunchIntentForPackage(BuildConfig.MANAGER_INJECTED_PKG_NAME);
-            Log.i(TAG, "getManagerIntent----22222-----" + intent);
+            Log.d(TAG, "getManagerIntent-----" + intent);
             if (intent == null) {
                 var pkgInfo = PackageService.getPackageInfo(BuildConfig.MANAGER_INJECTED_PKG_NAME, PackageManager.GET_ACTIVITIES, 0);
                 if (pkgInfo != null && pkgInfo.activities != null && pkgInfo.activities.length > 0) {
@@ -140,7 +140,7 @@ public class LSPManagerService extends ILSPManagerService.Stub {
                             intent = new Intent();
                             intent.setComponent(new ComponentName(activityInfo.packageName, activityInfo.name));
                             intent.setAction(Intent.ACTION_MAIN);
-                            Log.i(TAG, "getManagerIntent----33333-----" + intent);
+                            Log.d(TAG, "getManagerIntent--3-----" + intent);
                             break;
                         }
                     }
@@ -150,7 +150,7 @@ public class LSPManagerService extends ILSPManagerService.Stub {
                 if (intent.getCategories() != null) intent.getCategories().clear();
                 intent.addCategory("org.lsposed.manager.LAUNCH_MANAGER");
                 intent.setPackage(BuildConfig.MANAGER_INJECTED_PKG_NAME);
-                Log.i(TAG, "getManagerIntent----4444444-----" + intent);
+                Log.d(TAG, "getManagerIntent---end----" + intent);
                 managerIntent = new Intent(intent);
             }
         } catch (RemoteException e) {
