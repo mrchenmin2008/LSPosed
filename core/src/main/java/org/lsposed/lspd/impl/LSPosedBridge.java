@@ -10,7 +10,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
-import de.robv.android.xposed.XposedBridge;
+import de.robv.android.pmxped.PmxpedBridge;
 import io.github.libxposed.api.XposedInterface;
 import io.github.libxposed.api.annotations.AfterInvocation;
 import io.github.libxposed.api.annotations.BeforeInvocation;
@@ -19,7 +19,7 @@ import io.github.libxposed.api.errors.HookFailedError;
 
 public class LSPosedBridge {
 
-    private static final String TAG = "LSPosed-Bridge";
+    private static final String TAG = "lpspace-Bridge";
 
     private static final String castException = "Return value's type from hook callback does not match the hooked method";
 
@@ -117,7 +117,7 @@ public class LSPosedBridge {
             }
 
             Object[] ctxArray = new Object[modernSnapshot.length];
-            XposedBridge.LegacyApiSupport<T> legacy = null;
+            PmxpedBridge.LegacyApiSupport<T> legacy = null;
 
             // call "before method" callbacks
             int beforeIdx;
@@ -147,7 +147,7 @@ public class LSPosedBridge {
 
             if (!callback.isSkipped && legacySnapshot.length != 0) {
                 // TODO: Separate classloader
-                legacy = new XposedBridge.LegacyApiSupport<>(callback, legacySnapshot);
+                legacy = new PmxpedBridge.LegacyApiSupport<>(callback, legacySnapshot);
                 legacy.handleBefore();
             }
 

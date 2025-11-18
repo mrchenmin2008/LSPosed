@@ -43,12 +43,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XC_MethodReplacement;
-import de.robv.android.xposed.XposedBridge;
-import de.robv.android.xposed.XposedHelpers;
-import de.robv.android.xposed.XposedInit;
-import de.robv.android.xposed.callbacks.XC_LoadPackage;
+import de.robv.android.pmxped.XC_MethodHook;
+import de.robv.android.pmxped.XC_MethodReplacement;
+import de.robv.android.pmxped.PmxpedBridge;
+import de.robv.android.pmxped.PmxpedHelpers;
+import de.robv.android.pmxped.PmxpedInit;
+import de.robv.android.pmxped.callbacks.XC_LoadPackage;
 import io.github.libxposed.api.XposedInterface;
 import io.github.libxposed.api.XposedModuleInterface;
 import io.github.libxposed.api.annotations.AfterInvocation;
@@ -98,32 +98,32 @@ public class LoadedApkCreateCLHooker implements XposedInterface.Hooker {
                 packageName = "system";
             }
 
-            Object mAppDir = XposedHelpers.getObjectField(loadedApk, "mAppDir");
-            ClassLoader classLoader = (ClassLoader) XposedHelpers.getObjectField(loadedApk, "mClassLoader");
+            Object mAppDir = PmxpedHelpers.getObjectField(loadedApk, "mAppDir");
+            ClassLoader classLoader = (ClassLoader) PmxpedHelpers.getObjectField(loadedApk, "mClassLoader");
             Hookers.logD("LoadedApk#createClassLoader ends: " + mAppDir + " -> " + classLoader);
 
             if (classLoader == null) {
                 return;
             }
 
-            if (!isFirstPackage && !XposedHelpers.getBooleanField(loadedApk, "mIncludeCode")) {
+            if (!isFirstPackage && !PmxpedHelpers.getBooleanField(loadedApk, "mIncludeCode")) {
                 Hookers.logD("LoadedApk#<init> mIncludeCode == false: " + mAppDir);
                 return;
             }
 
-            if (!isFirstPackage && !XposedInit.getLoadedModules().getOrDefault(packageName, Optional.of("")).isPresent()) {
+            if (!isFirstPackage && !PmxpedInit.getLoadedModules().getOrDefault(packageName, Optional.of("")).isPresent()) {
                 return;
             }
 
             XC_LoadPackage.LoadPackageParam lpparam = new XC_LoadPackage.LoadPackageParam(
-                    XposedBridge.sLoadedPackageCallbacks);
+                    PmxpedBridge.sLoadedPackageCallbacks);
             lpparam.packageName = packageName;
             lpparam.processName = processName;
             lpparam.classLoader = classLoader;
             lpparam.appInfo = loadedApk.getApplicationInfo();
             lpparam.isFirstApplication = isFirstPackage;
 
-            if (isFirstPackage && XposedInit.getLoadedModules().getOrDefault(packageName, Optional.empty()).isPresent()) {
+            if (isFirstPackage && PmxpedInit.getLoadedModules().getOrDefault(packageName, Optional.empty()).isPresent()) {
                 hookNewXSP(lpparam);
             }
 
@@ -189,7 +189,7 @@ public class LoadedApkCreateCLHooker implements XposedInterface.Hooker {
 
         if (xposedminversion > 92 || xposedsharedprefs) {
             Utils.logI("New modules detected, hook preferences");
-            XposedHelpers.findAndHookMethod("android.app.ContextImpl", lpparam.classLoader, "checkMode", int.class, new XC_MethodHook() {
+            PmxpedHelpers.findAndHookMethod("android.app.ContextImpl", lpparam.classLoader, "checkMode", int.class, new XC_MethodHook() {
                 @Override
                 protected void afterHookedMethod(MethodHookParam param) {
                     if (((int) param.args[0] & 1/*Context.MODE_WORLD_READABLE*/) != 0) {
@@ -197,7 +197,7 @@ public class LoadedApkCreateCLHooker implements XposedInterface.Hooker {
                     }
                 }
             });
-            XposedHelpers.findAndHookMethod("android.app.ContextImpl", lpparam.classLoader, "getPreferencesDir", new XC_MethodReplacement() {
+            PmxpedHelpers.findAndHookMethod("android.app.ContextImpl", lpparam.classLoader, "getPreferencesDir", new XC_MethodReplacement() {
                 @Override
                 protected Object replaceHookedMethod(MethodHookParam param) {
                     return new File(serviceClient.getPrefsPath(lpparam.packageName));
