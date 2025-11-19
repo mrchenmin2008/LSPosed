@@ -8,7 +8,13 @@
     public static boolean *(android.os.IBinder, int, long, long, int);
 }
 
+# 保留 pmxped 所有类和内部类
 -keep class de.robv.android.pmxped.** { *; }
+-keep class de.robv.android.pmxped.XC_MethodHook$* { *; }
+-keep class de.robv.android.pmxped.XC_MethodReplacement$* { *; }
+
+# 忽略警告
+-dontwarn de.robv.android.pmxped.**
 
 -assumenosideeffects class android.util.Log {
     public static *** v(...);
