@@ -8,6 +8,8 @@
     public static boolean *(android.os.IBinder, int, long, long, int);
 }
 
+-keep class de.robv.android.pmxped.** { *; }
+
 -assumenosideeffects class android.util.Log {
     public static *** v(...);
     public static *** d(...);
