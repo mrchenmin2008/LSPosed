@@ -217,10 +217,10 @@ void MagiskLoader::OnNativeForkAndSpecializePre(JNIEnv *env, jint uid, jintArray
 void MagiskLoader::OnNativeForkAndSpecializePost(JNIEnv *env, jstring nice_name, jstring app_dir) {
     //chenm
     LOGD("app post OnNativeForkAndSpecializePost");
-    // 从 thread_local 获取 pre 阶段状态
+    
     const bool skip = tls_ctx.skip;
     const jboolean is_parasitic_manager = tls_ctx.is_parasitic_manager;
-    tls_ctx = {}; // 清空，防止污染后续 fork
+    tls_ctx = {}; 
     LOGI("OnNativeForkAndSpecializePost skip: {}", skip);
     //chenm
     const JUTFString process_name(env, nice_name);

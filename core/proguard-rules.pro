@@ -1,5 +1,5 @@
 -keep class android.** { *; }
--keep class de.robv.android.xposed.** {*;}
+-keep class de.robv.android.pmxped.** {*;}
 -keep class io.github.libxposed.** {*;}
 -keep class org.lsposed.lspd.core.* {*;}
 -keep class org.lsposed.lspd.hooker.HandleSystemServerProcessHooker {*;}
