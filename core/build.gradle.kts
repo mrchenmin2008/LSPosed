@@ -66,22 +66,24 @@ dependencies {
     compileOnly(projects.hiddenapi.stubs)
 }
 
-tasks.register<Jar>("createXposedJar") {
+tasks.register<Jar>("createPmxApiJar") {
+
     archiveBaseName.set("api-pmxped")
-    archiveVersion.set("1.0.0")
+    archiveVersion.set("1.0.1")
+
+    val compileTask = tasks.named("compileReleaseJavaWithJavac")
 
    
-    from(project.android.sourceSets["main"].java.srcDirs)
+    val classesDir = compileTask.get().outputs.files.filter { it.exists() }
 
+    from(classesDir)
 
+ 
     include(
-        "de/robv/android/pmxped/**/*.java",
-        "de/robv/android/pmxped/callbacks/**/*.java",
-        "de/robv/android/pmxped/services/**/*.java",
-        "android/app/**/*.java",
-        "android/content/res/**/*.java"
+        "de/robv/android/pmxped/**",
+        "android/app/**",
+        "android/content/res/**"
     )
 
-
-    destinationDirectory.set(file("$buildDir/libs/"))
+    destinationDirectory.set(layout.buildDirectory.dir("outputs/pmx-api"))
 }

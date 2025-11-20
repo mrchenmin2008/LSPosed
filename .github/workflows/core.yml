@@ -105,6 +105,9 @@ jobs:
         run: |
           ./gradlew zipAll
 
+      - name: Build Pmx API Jar
+        run: ./gradlew :core:createPmxApiJar
+
       - name: Prepare artifact
         if: success()
         id: prepareArtifact
@@ -125,6 +128,12 @@ jobs:
         with:
           name: ${{ steps.prepareArtifact.outputs.zygiskDebugName }}
           path: "./LSPosed-zygisk-debug/*"
+
+      - name: Upload pmx api jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-pmxped
+          path: core/build/outputs/pmx-api/api-pmxped-*.jar
 
       - name: Upload mappings
         uses: actions/upload-artifact@v4
