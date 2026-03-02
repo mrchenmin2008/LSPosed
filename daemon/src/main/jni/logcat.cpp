@@ -250,14 +250,25 @@ void Logcat::ProcessBuffer(struct log_msg *buf) {
         } else if (msg == "!!stop_watchdog!!"sv) {
             enable_watchdog = false;
             enable_watchdog.notify_one();
-            std::system("resetprop -p --delete persist.logd.size");
-            std::system("resetprop -p --delete persist.logd.size.crash");
-            std::system("resetprop -p --delete persist.logd.size.main");
-            std::system("resetprop -p --delete persist.logd.size.system");
+            //chen modify
+//            std::system(" resetprop -p --delete persist.logd.size");
+//            std::system("resetprop -p --delete persist.logd.size.crash");
+//            std::system("resetprop -p --delete persist.logd.size.main");
+//            std::system("resetprop -p --delete persist.logd.size.system");
+//
+//            // Terminate the watchdog thread by exiting __system_property_wait firs firstt
+//            std::system("setprop persist.log.tag V");
+//            std::system("resetprop -p --delete persist.log.tag");
 
-            // Terminate the watchdog thread by exiting __system_property_wait firs firstt
-            std::system("setprop persist.log.tag V");
-            std::system("resetprop -p --delete persist.log.tag");
+            __system_property_set("persist.logd.size", "");
+            __system_property_set("persist.logd.size.crash", "");
+            __system_property_set("persist.logd.size.main", "");
+            __system_property_set("persist.logd.size.system", "");
+
+            __system_property_set("persist.log.tag", "V");
+            __system_property_set("persist.log.tag", "");
+
+            //chen modify
         }
     }
 }
