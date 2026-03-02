@@ -46,10 +46,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import io.github.libxposed.service.IXposedScopeCallback;
 import io.github.libxposed.service.IXposedService;
+import io.github.libxposed.service.HookedProcess;
 
 public class LSPModuleService extends IXposedService.Stub {
 
-    private final static String TAG = "LSPosedModuleService";
+    private final static String TAG = "lpspaceModuleService";
 
     private final static Set<Integer> uidSet = ConcurrentHashMap.newKeySet();
     private final static Map<Module, LSPModuleService> serviceMap = Collections.synchronizedMap(new WeakHashMap<>());
@@ -265,4 +266,11 @@ public class LSPModuleService extends IXposedService.Stub {
             throw new RemoteException(e.getMessage());
         }
     }
+
+    //chen add
+    @Override
+    public List<HookedProcess> getRunningTargets() {
+        return Collections.emptyList();
+    }
+    //chen add
 }
