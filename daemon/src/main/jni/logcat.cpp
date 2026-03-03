@@ -251,6 +251,7 @@ void Logcat::ProcessBuffer(struct log_msg *buf) {
             enable_watchdog = false;
             enable_watchdog.notify_one();
             //chen modify
+              Log("[stop_watchdog --cm]\n");
 //            std::system(" resetprop -p --delete persist.logd.size");
 //            std::system("resetprop -p --delete persist.logd.size.crash");
 //            std::system("resetprop -p --delete persist.logd.size.main");
