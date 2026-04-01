@@ -435,6 +435,7 @@ public class ConfigFileManager {
             locker = new FileLocker(lockChannel);
             return locker.isValid();
         } catch (Throwable e) {
+            Log.e(TAG, "tryLock", e);
             return false;
         }
     }

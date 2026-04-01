@@ -95,8 +95,9 @@ public class ServiceManager {
 
     // call by ourselves
     public static void start(String[] args) {
+        Log.i(TAG, "serviceManager--start()...");
         if (!ConfigFileManager.tryLock()) System.exit(0);
-
+        Log.i(TAG, "serviceManager--start()...1111");
         int systemServerMaxRetry = 1;
         for (String arg : args) {
             if (arg.startsWith("--system-server-max-retry=")) {
